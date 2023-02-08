@@ -5,20 +5,27 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { DirectionsRenderer, GoogleMap, Marker } from "@react-google-maps/api";
-import Places from "./Places";
+import {
+  DirectionsRenderer,
+  GoogleMap,
+  Marker,
+  Polyline,
+} from "@react-google-maps/api";
+import Header from "./Header";
+import Meter from "./Meter";
 
 function Map() {
+  const [center, setCenter] = useState({ lat: 13.75, lng: 100.5 });
   const [origin, setOrigin] = useState();
   const [destination, setDestination] = useState();
   const [directions, setDirections] = useState();
   const [distance, setDistance] = useState();
   const [duration, setDuration] = useState();
   const [price, setPrice] = useState();
+  const [steps, setSteps] = useState();
 
   const mapRef = useRef();
 
-  const [center, setCenter] = useState({ lat: 13.75, lng: 100.5 });
   const options = useMemo(
     () => ({
       // mapId: "3713c985864a0e82",
@@ -78,30 +85,17 @@ function Map() {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="flex flex-col p-5 bg-slate-200 gap-2">
-        <h1>
-          <b>Origin</b>
-        </h1>
-        <Places
-          setLocation={(position) => {
-            setOrigin(position);
-          }}
-        />
-        <h1>
-          <b>Destination</b>
-        </h1>
-        <Places
-          setLocation={(position) => {
-            setDestination(position);
-          }}
-        />
-      </div>
+      <Header
+        onSetOrigin={(position) => setOrigin(position)}
+        onSetDestination={(postition) => setDestination(postition)}
+        onSetCenter={(position) => setCenter(position)}
+      />
 
       <GoogleMap
         mapContainerClassName="h-full w-full"
         options={options}
         center={center}
-        zoom={10}
+        zoom={15}
         onLoad={onMapLoad}
       >
         {origin && (
@@ -129,25 +123,34 @@ function Map() {
             directions={directions}
             options={{
               markerOptions: { visible: false },
+              preserveViewport: true,
             }}
           />
         )}
+        {steps && (
+          <>
+            <Marker position={center} />
+            <Polyline
+              path={steps}
+              options={{ strokeColor: "#FF0000", strokeWeight: 10, zIndex: 20 }}
+            />
+          </>
+        )}
       </GoogleMap>
       {directions && (
-        <div className="flex flex-col p-5 bg-slate-200 gap-2 z-10 shadow-xl">
-          <h1>
-            <b>Distance</b>: {distance}
-          </h1>
-          <h1>
-            <b>Duration</b>: {duration}
-          </h1>
-          <h1>
-            <b>Price</b>: {price} ฿
-          </h1>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded">
-            START
-          </button>
-        </div>
+        <Meter
+          distance={distance}
+          onSetDistance={setDistance}
+          duration={duration}
+          onSetDuration={setDuration}
+          price={price}
+          onSetPrice={setPrice}
+          onSetSteps={(position) => setSteps(position)}
+          onSetCenter={(position) => setCenter(position)}
+          onSetOrigin={(position) => setOrigin(position)}
+          onSetDestination={(postition) => setDestination(postition)}
+          clearDirection={() => setDirections()}
+        />
       )}
     </div>
   );

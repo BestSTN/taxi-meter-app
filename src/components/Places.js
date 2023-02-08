@@ -10,7 +10,7 @@ import usePlacesAutocomplete, {
   getLatLng,
 } from "use-places-autocomplete";
 
-function Places({ setLocation }) {
+function Places({ onSetLocation, onSetCenter }) {
   const {
     ready,
     value,
@@ -26,7 +26,8 @@ function Places({ setLocation }) {
     try {
       const results = await getGeocode({ address: address });
       const { lat, lng } = await getLatLng(results[0]);
-      setLocation({ lat, lng });
+      onSetLocation({ lat, lng });
+      onSetCenter({ lat, lng });
     } catch (err) {
       console.log(err);
     }
